@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sistema de Gestión Municipal
 
-## Getting Started
+Proyecto final — plataforma para un municipio con 4 módulos: **Reclamos ciudadanos**,
+**Gestión de expedientes**, **Gestión de turnos** y **Atención al vecino**.
 
-First, run the development server:
+Stack: Next.js (App Router) + TypeScript + Tailwind + Prisma + PostgreSQL.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Setup para cada integrante del equipo
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. Clonar el repo e instalar dependencias:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+   ```bash
+   npm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. Tener PostgreSQL instalado y corriendo localmente (versión 17 recomendada).
+   Crear una base vacía, por ejemplo `municipio_db`.
 
-## Learn More
+3. Copiar `.env.example` a `.env` y completar con tus propios datos de conexión:
 
-To learn more about Next.js, take a look at the following resources:
+   ```
+   DATABASE_URL="postgresql://usuario:contraseña@localhost:5432/municipio_db?schema=public"
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4. Generar el cliente de Prisma y crear las tablas en tu base local:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   ```bash
+   npx prisma migrate dev
+   ```
 
-## Deploy on Vercel
+5. (Opcional) Cargar datos de ejemplo:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   ```bash
+   npx prisma db seed
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+6. Levantar el proyecto:
+
+   ```bash
+   npm run dev
+   ```
+
+   Abrir [http://localhost:3000](http://localhost:3000).
+
+## Estructura de la base de datos (`prisma/schema.prisma`)
+
+- `Usuario` / `Vecino` / `Empleado` / `Area` — base compartida por todos los módulos
+  (login, perfil de ciudadano, perfil de empleado municipal y dependencias del municipio).
+- `Reclamo` — módulo **Reclamos ciudadanos**.
+- `Expediente` + `MovimientoExpediente` — módulo **Gestión de expedientes** (con historial).
+- `Turno` — módulo **Gestión de turnos**.
+- `Atencion` — módulo **Atención al vecino** (consultas generales).
+
+Cada módulo tiene su carpeta placeholder en `src/app/<modulo>/page.tsx` como punto de partida.
+
+## Comandos útiles de Prisma
+
+- `npx prisma studio` — interfaz visual para ver/editar los datos de la base.
+- `npx prisma migrate dev --name <descripcion>` — crear una nueva migración después de modificar el schema.
+- `npx prisma generate` — regenerar el cliente de Prisma (se corre solo con `migrate dev`, pero a veces hay que forzarlo).
