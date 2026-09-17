@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export async function registrarUsuario(formData: FormData) {
@@ -13,16 +14,23 @@ export async function registrarUsuario(formData: FormData) {
 
   const passwordHash = await bcrypt.hash(password, 10);
 
-  await prisma.usuario.create({
-    data: {
-      email,
-      passwordHash,
-      rol: "VECINO",
-      vecino: {
-        create: { nombre, apellido, dni },
+  try {
+    await prisma.usuario.create({
+      data: {
+        email,
+        passwordHash,
+        rol: "VECINO",
+        vecino: {
+          create: { nombre, apellido, dni },
+        },
       },
-    },
-  });
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      redirect("/registro?error=1");
+    }
+    throw error;
+  }
 
   redirect("/login");
 }

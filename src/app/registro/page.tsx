@@ -1,12 +1,24 @@
 import { registrarUsuario } from "./actions";
 
-export default function RegistroPage() {
+export default async function RegistroPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
+
   return (
     <div className="flex flex-1 flex-col items-center px-6 py-16">
       <div className="w-full max-w-md">
         <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
           Registrarme
         </h1>
+
+        {error && (
+          <p className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+            Ya existe una cuenta con ese email o DNI.
+          </p>
+        )}
 
         <form action={registrarUsuario} className="mt-6 flex flex-col gap-4">
           <div>
