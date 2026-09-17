@@ -1,3 +1,5 @@
+import { registrarUsuario } from "./actions";
+
 export default function RegistroPage() {
   return (
     <div className="flex flex-1 flex-col items-center px-6 py-16">
@@ -6,7 +8,7 @@ export default function RegistroPage() {
           Registrarme
         </h1>
 
-        <form className="mt-6 flex flex-col gap-4">
+        <form action={registrarUsuario} className="mt-6 flex flex-col gap-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Email
