@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { getUsuarioActual } from "@/lib/session";
@@ -42,15 +43,15 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-zinc-50 dark:bg-black">
         <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-black">
           <nav className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-            <a href="/" className="font-semibold text-zinc-900 dark:text-zinc-50">
+            <Link href="/" className="font-semibold text-zinc-900 dark:text-zinc-50">
               Municipio
-            </a>
+            </Link>
             <ul className="flex gap-6 text-sm font-medium text-zinc-600 dark:text-zinc-400">
               {modulos.map((m) => (
                 <li key={m.href}>
-                  <a href={m.href} className="hover:text-zinc-950 dark:hover:text-zinc-50">
+                  <Link href={m.href} className="hover:text-zinc-950 dark:hover:text-zinc-50">
                     {m.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -71,15 +72,15 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
               </div>
             ) : (
               <div className="flex items-center gap-4 text-sm font-medium">
-                <a href="/login" className="text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50">
+                <Link href="/login" className="text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50">
                   Iniciar sesión
-                </a>
-                <a
+                </Link>
+                <Link
                   href="/registro"
                   className="rounded-md bg-zinc-900 px-3 py-1.5 text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-300"
                 >
                   Registrarme
-                </a>
+                </Link>
               </div>
             )}
           </nav>

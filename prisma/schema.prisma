@@ -109,28 +109,32 @@ enum EstadoExpediente {
 }
 
 model Expediente {
-  id            String           @id @default(cuid())
-  numero        String           @unique // ej: "EXP-2026-000123"
-  tipo          String           // ej: "Habilitación comercial", "Reclamo administrativo"
-  estado        EstadoExpediente @default(INICIADO)
-  fechaInicio   DateTime         @default(now())
-  fechaCierre   DateTime?
+  id           String           @id @default(cuid())
+  numero       String           @unique // ej: "EXP-2026-000123"
+  caratula     String           // Título / Tema público (Ej: "Solicitud de Habilitación")
+  extracto     String           // Resumen general público
+  tipo         String           // ej: "Habilitación comercial", "Reclamo administrativo"
+  estado       EstadoExpediente @default(INICIADO)
+  esPrivado    Boolean          @default(false) // Indica si el expediente completo es confidencial
+  fechaInicio  DateTime         @default(now())
+  fechaCierre  DateTime?
 
-  vecino    Vecino? @relation(fields: [vecinoId], references: [id])
-  vecinoId  String?
-  area      Area    @relation(fields: [areaId], references: [id])
-  areaId    String
+  vecino       Vecino?          @relation(fields: [vecinoId], references: [id])
+  vecinoId     String?
+  area         Area             @relation(fields: [areaId], references: [id])
+  areaId       String
 
-  movimientos MovimientoExpediente[]
+  movimientos  MovimientoExpediente[]
 }
 
 model MovimientoExpediente {
-  id            String           @id @default(cuid())
-  expediente    Expediente       @relation(fields: [expedienteId], references: [id])
-  expedienteId  String
-  estadoNuevo   EstadoExpediente
-  comentario    String?
-  fecha         DateTime         @default(now())
+  id             String           @id @default(cuid())
+  expediente     Expediente       @relation(fields: [expedienteId], references: [id], onDelete: Cascade)
+  expedienteId   String
+  estadoNuevo    EstadoExpediente
+  comentario     String?          // Observación o dictamen del pase
+  esConfidencial Boolean          @default(false) // Si este movimiento solo lo ven Admin / Iniciador
+  fecha          DateTime         @default(now())
 }
 
 // ---------- Módulo: Gestión de turnos ----------
