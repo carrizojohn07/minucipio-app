@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 
 export async function getUsuarioActual() {
@@ -13,4 +14,13 @@ export async function getUsuarioActual() {
     where: { id: usuarioId },
     include: { vecino: true, empleado: true },
   });
+}
+export async function requireUsuario() {
+  const usuario = await getUsuarioActual();
+
+  if (!usuario) {
+    redirect("/login");
+  }
+
+  return usuario;
 }

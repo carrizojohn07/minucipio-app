@@ -1,4 +1,8 @@
-export default function AtencionPage() {
+import { requireUsuario } from "@/lib/session";
+
+export default async function AtencionPage() {
+  const usuario = await requireUsuario();
+
   return (
     <div className="flex flex-1 flex-col items-center px-6 py-16">
       <div className="w-full max-w-3xl">
@@ -6,8 +10,7 @@ export default function AtencionPage() {
           Atención al vecino
         </h1>
         <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-          En construcción. Acá va el registro de consultas generales
-          (modelo <code>Atencion</code> en <code>prisma/schema.prisma</code>).
+          Hola, {usuario.vecino?.nombre ?? usuario.email}. En construcción.
         </p>
       </div>
     </div>
