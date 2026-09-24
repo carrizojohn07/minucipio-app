@@ -1,214 +1,236 @@
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { EstadoReclamo } from "@prisma/client";
+import { requireUsuario } from "@/lib/session";
 import { crearReclamo, actualizarEstadoReclamo, eliminarReclamo } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function ReclamosPage() {
-  const cookieStore = await cookies();
-  const sesionUsuarioId = cookieStore.get("sesion_usuario_id")?.value;
+const getEstadoBadge = (estado: EstadoReclamo) => {
+  switch (estado) {
+    case EstadoReclamo.PENDIENTE:
+      return (
+        <span className="inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-800 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+          Pendiente
+        </span>
+      );
+    case EstadoReclamo.EN_PROCESO:
+      return (
+        <span className="inline-flex items-center rounded-full border border-blue-300 bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:border-blue-800 dark:bg-blue-950/60 dark:text-blue-300">
+          En Proceso
+        </span>
+      );
+    case EstadoReclamo.RESUELTO:
+      return (
+        <span className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+          Resuelto
+        </span>
+      );
+    case EstadoReclamo.RECHAZADO:
+      return (
+        <span className="inline-flex items-center rounded-full border border-rose-300 bg-rose-50 px-2.5 py-0.5 text-xs font-medium text-rose-800 dark:border-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
+          Rechazado
+        </span>
+      );
+  }
+};
 
-  const [reclamos, areas, usuarioActual] = await Promise.all([
+export default async function ReclamosPage() {
+  const usuario = await requireUsuario();
+  const esPersonalMunicipal = usuario.rol === "EMPLEADO" || usuario.rol === "ADMIN";
+
+  // ---------- Vista empleado/admin: todos los reclamos + panel de gestión ----------
+  if (esPersonalMunicipal) {
+    const reclamos = await prisma.reclamo.findMany({
+      include: { vecino: true, area: true },
+      orderBy: { creadoEn: "desc" },
+    });
+
+    const stats = {
+      total: reclamos.length,
+      pendientes: reclamos.filter((r) => r.estado === EstadoReclamo.PENDIENTE).length,
+      enProceso: reclamos.filter((r) => r.estado === EstadoReclamo.EN_PROCESO).length,
+      resueltos: reclamos.filter((r) => r.estado === EstadoReclamo.RESUELTO).length,
+    };
+
+    return (
+      <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+            Reclamos Vecinales — Panel municipal
+          </h1>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            Seguimiento y gestión de reclamos ciudadanos para las distintas áreas del municipio.
+          </p>
+        </div>
+
+        <div className="mb-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+            <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Total Reclamos</p>
+            <p className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{stats.total}</p>
+          </div>
+          <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4 shadow-xs dark:border-amber-900/40 dark:bg-amber-950/20">
+            <p className="text-xs font-medium text-amber-700 dark:text-amber-400">Pendientes</p>
+            <p className="mt-1 text-2xl font-semibold text-amber-900 dark:text-amber-200">{stats.pendientes}</p>
+          </div>
+          <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-4 shadow-xs dark:border-blue-900/40 dark:bg-blue-950/20">
+            <p className="text-xs font-medium text-blue-700 dark:text-blue-400">En Proceso</p>
+            <p className="mt-1 text-2xl font-semibold text-blue-900 dark:text-blue-200">{stats.enProceso}</p>
+          </div>
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 shadow-xs dark:border-emerald-900/40 dark:bg-emerald-950/20">
+            <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400">Resueltos</p>
+            <p className="mt-1 text-2xl font-semibold text-emerald-900 dark:text-emerald-200">{stats.resueltos}</p>
+          </div>
+        </div>
+
+        {reclamos.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-700">
+            <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+              Aún no hay reclamos cargados.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {reclamos.map((reclamo) => (
+              <div
+                key={reclamo.id}
+                className="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2 border-b border-zinc-100 pb-3 dark:border-zinc-800">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                        {reclamo.categoria}
+                      </span>
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Área: <strong className="text-zinc-800 dark:text-zinc-200">{reclamo.area.nombre}</strong>
+                      </span>
+                    </div>
+                    <h3 className="mt-1.5 text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                      {reclamo.titulo}
+                    </h3>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                      Prioridad {reclamo.prioridad}/5
+                    </span>
+                    {getEstadoBadge(reclamo.estado)}
+                  </div>
+                </div>
+
+                <p className="mt-3 text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-line">
+                  {reclamo.descripcion}
+                </p>
+
+                {reclamo.direccion && (
+                  <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                    <strong>Ubicación:</strong> {reclamo.direccion}
+                  </p>
+                )}
+
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-zinc-50 px-3 py-2 text-xs text-zinc-600 dark:bg-zinc-950 dark:text-zinc-400">
+                  <span>
+                    Vecino: <strong className="text-zinc-900 dark:text-zinc-200">{reclamo.vecino.nombre} {reclamo.vecino.apellido}</strong> (DNI: {reclamo.vecino.dni})
+                    {reclamo.vecino.telefono && <span className="ml-2">· Tel: {reclamo.vecino.telefono}</span>}
+                  </span>
+                  <span>
+                    {new Date(reclamo.creadoEn).toLocaleDateString("es-AR", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 pt-3 text-xs dark:border-zinc-800">
+                  <form action={actualizarEstadoReclamo} className="flex flex-wrap items-center gap-2">
+                    <input type="hidden" name="reclamoId" value={reclamo.id} />
+                    <label className="text-zinc-500 dark:text-zinc-400">Cambiar estado:</label>
+                    <select
+                      name="estado"
+                      defaultValue={reclamo.estado}
+                      className="rounded border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+                    >
+                      <option value={EstadoReclamo.PENDIENTE}>Pendiente</option>
+                      <option value={EstadoReclamo.EN_PROCESO}>En Proceso</option>
+                      <option value={EstadoReclamo.RESUELTO}>Resuelto</option>
+                      <option value={EstadoReclamo.RECHAZADO}>Rechazado</option>
+                    </select>
+                    <input
+                      type="text"
+                      name="respuesta"
+                      defaultValue={reclamo.respuesta ?? ""}
+                      placeholder="Nota o resolución municipal..."
+                      className="rounded border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-800 placeholder-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+                    />
+                    <button
+                      type="submit"
+                      className="rounded bg-zinc-200 px-2.5 py-1 text-xs font-medium text-zinc-800 hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                    >
+                      Actualizar
+                    </button>
+                  </form>
+
+                  <form action={eliminarReclamo}>
+                    <input type="hidden" name="reclamoId" value={reclamo.id} />
+                    <button
+                      type="submit"
+                      className="text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400"
+                      title="Eliminar reclamo"
+                    >
+                      Eliminar
+                    </button>
+                  </form>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ---------- Vista vecino: solo sus reclamos + formulario de carga ----------
+  if (!usuario.vecino) {
+    return (
+      <div className="flex flex-1 flex-col items-center px-6 py-16">
+        <p className="text-zinc-600 dark:text-zinc-400">
+          Esta sección es solo para vecinos registrados.
+        </p>
+      </div>
+    );
+  }
+
+  const [reclamos, areas] = await Promise.all([
     prisma.reclamo.findMany({
-      include: {
-        vecino: true,
-        area: true,
-      },
+      where: { vecinoId: usuario.vecino.id },
+      include: { area: true },
       orderBy: { creadoEn: "desc" },
     }),
-    prisma.area.findMany({
-      orderBy: { nombre: "asc" },
-    }),
-    sesionUsuarioId
-      ? prisma.usuario.findUnique({
-          where: { id: sesionUsuarioId },
-          include: { vecino: true },
-        })
-      : null,
+    prisma.area.findMany({ orderBy: { nombre: "asc" } }),
   ]);
-
-  const stats = {
-    total: reclamos.length,
-    pendientes: reclamos.filter((r) => r.estado === EstadoReclamo.PENDIENTE).length,
-    enProceso: reclamos.filter((r) => r.estado === EstadoReclamo.EN_PROCESO).length,
-    resueltos: reclamos.filter((r) => r.estado === EstadoReclamo.RESUELTO).length,
-  };
-
-  const getEstadoBadge = (estado: EstadoReclamo) => {
-    switch (estado) {
-      case EstadoReclamo.PENDIENTE:
-        return (
-          <span className="inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-800 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
-            Pendiente
-          </span>
-        );
-      case EstadoReclamo.EN_PROCESO:
-        return (
-          <span className="inline-flex items-center rounded-full border border-blue-300 bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:border-blue-800 dark:bg-blue-950/60 dark:text-blue-300">
-            En Proceso
-          </span>
-        );
-      case EstadoReclamo.RESUELTO:
-        return (
-          <span className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
-            Resuelto
-          </span>
-        );
-      case EstadoReclamo.RECHAZADO:
-        return (
-          <span className="inline-flex items-center rounded-full border border-rose-300 bg-rose-50 px-2.5 py-0.5 text-xs font-medium text-rose-800 dark:border-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
-            Rechazado
-          </span>
-        );
-    }
-  };
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
-      {/* Cabecera */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Reclamos Vecinales
+          Reclamos ciudadanos
         </h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Registro, asignación y seguimiento de reclamos ciudadanos para las distintas áreas del municipio.
+          Registrá un reclamo y seguí su estado hasta que se resuelva.
         </p>
       </div>
 
-      {/* Tarjetas de Metricas */}
-      <div className="mb-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Total Reclamos</p>
-          <p className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{stats.total}</p>
-        </div>
-        <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4 shadow-xs dark:border-amber-900/40 dark:bg-amber-950/20">
-          <p className="text-xs font-medium text-amber-700 dark:text-amber-400">Pendientes</p>
-          <p className="mt-1 text-2xl font-semibold text-amber-900 dark:text-amber-200">{stats.pendientes}</p>
-        </div>
-        <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-4 shadow-xs dark:border-blue-900/40 dark:bg-blue-950/20">
-          <p className="text-xs font-medium text-blue-700 dark:text-blue-400">En Proceso</p>
-          <p className="mt-1 text-2xl font-semibold text-blue-900 dark:text-blue-200">{stats.enProceso}</p>
-        </div>
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 shadow-xs dark:border-emerald-900/40 dark:bg-emerald-950/20">
-          <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400">Resueltos</p>
-          <p className="mt-1 text-2xl font-semibold text-emerald-900 dark:text-emerald-200">{stats.resueltos}</p>
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
-        {/* Formulario de Carga */}
         <div className="lg:col-span-5">
           <div className="sticky top-6 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="mb-5 border-b border-zinc-100 pb-4 dark:border-zinc-800">
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                Nuevo Reclamo
-              </h2>
-              <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-                Completa los datos del vecino y el detalle del incidente.
-              </p>
-            </div>
+            <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+              Nuevo Reclamo
+            </h2>
 
             <form action={crearReclamo} className="space-y-4">
-              {/* Seccion Datos del Vecino */}
-              {usuarioActual?.vecino ? (
-                <div className="rounded-lg border border-emerald-200 bg-emerald-50/70 p-3.5 dark:border-emerald-900/50 dark:bg-emerald-950/30">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
-                      Sesión activa
-                    </span>
-                    <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
-                      DNI: {usuarioActual.vecino.dni}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    {usuarioActual.vecino.nombre} {usuarioActual.vecino.apellido}
-                  </p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    {usuarioActual.email} {usuarioActual.vecino.telefono && `· Tel: ${usuarioActual.vecino.telefono}`}
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3 rounded-lg bg-zinc-50 p-3.5 dark:bg-zinc-950">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                      Datos del Vecino
-                    </p>
-                    <a
-                      href="/login"
-                      className="text-xs font-medium text-blue-600 hover:underline dark:text-blue-400"
-                    >
-                      ¿Tenés cuenta? Ingresar
-                    </a>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                        Nombre *
-                      </label>
-                      <input
-                        type="text"
-                        name="nombre"
-                        required
-                        placeholder="Juan"
-                        className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                        Apellido *
-                      </label>
-                      <input
-                        type="text"
-                        name="apellido"
-                        required
-                        placeholder="Pérez"
-                        className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                        DNI *
-                      </label>
-                      <input
-                        type="text"
-                        name="dni"
-                        required
-                        placeholder="38123456"
-                        className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                        Teléfono
-                      </label>
-                      <input
-                        type="tel"
-                        name="telefono"
-                        placeholder="11-4567-8900"
-                        className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                      Email de contacto (opcional)
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      placeholder="juan.perez@email.com"
-                      className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Seccion Datos del Reclamo */}
               <div>
                 <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300">
                   Título del Reclamo *
@@ -313,24 +335,15 @@ export default async function ReclamosPage() {
           </div>
         </div>
 
-        {/* Listado de Reclamos */}
         <div className="lg:col-span-7">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-              Reclamos Registrados ({reclamos.length})
-            </h2>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">
-              Actualizado en tiempo real
-            </span>
-          </div>
+          <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            Mis reclamos ({reclamos.length})
+          </h2>
 
           {reclamos.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-700">
               <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-                Aún no hay reclamos cargados.
-              </p>
-              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-500">
-                Usa el formulario de la izquierda para registrar el primero.
+                Todavía no cargaste ningún reclamo.
               </p>
             </div>
           ) : (
@@ -338,7 +351,7 @@ export default async function ReclamosPage() {
               {reclamos.map((reclamo) => (
                 <div
                   key={reclamo.id}
-                  className="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+                  className="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2 border-b border-zinc-100 pb-3 dark:border-zinc-800">
                     <div>
@@ -354,24 +367,12 @@ export default async function ReclamosPage() {
                         {reclamo.titulo}
                       </h3>
                     </div>
-
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                        Prioridad {reclamo.prioridad}/5
-                      </span>
-                      {getEstadoBadge(reclamo.estado)}
-                    </div>
+                    {getEstadoBadge(reclamo.estado)}
                   </div>
 
                   <p className="mt-3 text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-line">
                     {reclamo.descripcion}
                   </p>
-
-                  {reclamo.direccion && (
-                    <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-                       <strong>Ubicación:</strong> {reclamo.direccion}
-                    </p>
-                  )}
 
                   {reclamo.respuesta && (
                     <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50/50 p-3 text-xs dark:border-emerald-900/50 dark:bg-emerald-950/20">
@@ -383,69 +384,6 @@ export default async function ReclamosPage() {
                       </p>
                     </div>
                   )}
-
-                  {/* Datos del Vecino & Fecha */}
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-zinc-50 px-3 py-2 text-xs text-zinc-600 dark:bg-zinc-950 dark:text-zinc-400">
-                    <div>
-                      <span>
-                        Vecino: <strong className="text-zinc-900 dark:text-zinc-200">{reclamo.vecino.nombre} {reclamo.vecino.apellido}</strong> (DNI: {reclamo.vecino.dni})
-                      </span>
-                      {reclamo.vecino.telefono && (
-                        <span className="ml-2">· Tel: {reclamo.vecino.telefono}</span>
-                      )}
-                    </div>
-                    <span>
-                      {new Date(reclamo.creadoEn).toLocaleDateString("es-AR", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </div>
-
-                  {/* Panel Rapido de Gestion para Operador / Empleado (Sin Login) */}
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 pt-3 text-xs dark:border-zinc-800">
-                    <form action={actualizarEstadoReclamo} className="flex flex-wrap items-center gap-2">
-                      <input type="hidden" name="reclamoId" value={reclamo.id} />
-                      <label className="text-zinc-500 dark:text-zinc-400">Cambiar estado:</label>
-                      <select
-                        name="estado"
-                        defaultValue={reclamo.estado}
-                        className="rounded border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
-                      >
-                        <option value={EstadoReclamo.PENDIENTE}>Pendiente</option>
-                        <option value={EstadoReclamo.EN_PROCESO}>En Proceso</option>
-                        <option value={EstadoReclamo.RESUELTO}>Resuelto</option>
-                        <option value={EstadoReclamo.RECHAZADO}>Rechazado</option>
-                      </select>
-                      <input
-                        type="text"
-                        name="respuesta"
-                        defaultValue={reclamo.respuesta ?? ""}
-                        placeholder="Nota o resolución municipal..."
-                        className="rounded border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-800 placeholder-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
-                      />
-                      <button
-                        type="submit"
-                        className="rounded bg-zinc-200 px-2.5 py-1 text-xs font-medium text-zinc-800 hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
-                      >
-                        Actualizar
-                      </button>
-                    </form>
-
-                    <form action={eliminarReclamo}>
-                      <input type="hidden" name="reclamoId" value={reclamo.id} />
-                      <button
-                        type="submit"
-                        className="text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400"
-                        title="Eliminar reclamo"
-                      >
-                        Eliminar
-                      </button>
-                    </form>
-                  </div>
                 </div>
               ))}
             </div>
