@@ -166,6 +166,8 @@ model Atencion {
   id          String   @id @default(cuid())
   motivo      String   // consulta general, no encuadrada en reclamo/turno/expediente
   descripcion String?
+  atendida    Boolean  @default(false)
+  respuesta   String?
   fecha       DateTime @default(now())
 
   vecino    Vecino @relation(fields: [vecinoId], references: [id])
