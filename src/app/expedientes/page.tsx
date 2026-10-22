@@ -128,14 +128,6 @@ export default async function ExpedientesPage({ searchParams }: ExpedientesPageP
     };
   }
 
-  // Sugerencias de muestra para facilitar pruebas rápidas
-  const expedientesEjemplo = [
-    { num: "EXP-2026-000101", desc: "Habilitación comercial (Titular: Carlos Benítez)" },
-    { num: "EXP-2026-000102", desc: "Conexión cloacal observada (Titular: Dante)" },
-    { num: "EXP-2026-000103", desc: "Transporte escolar concluido (Público)" },
-    { num: "EXP-2026-000104", desc: "Auditoría reservada (Confidencial)" },
-  ];
-
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
       {/* Cabecera Principal */}
@@ -239,20 +231,6 @@ export default async function ExpedientesPage({ searchParams }: ExpedientesPageP
           )}
         </form>
 
-        {/* Chips de prueba rápida */}
-        <div className="mt-4 flex flex-wrap items-center gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-          <span className="text-xs text-zinc-500 dark:text-zinc-400">Expedientes de prueba:</span>
-          {expedientesEjemplo.map((ej) => (
-            <Link
-              key={ej.num}
-              href={`/expedientes?numero=${ej.num}`}
-              title={ej.desc}
-              className="rounded-lg border border-zinc-200 bg-zinc-50 px-2.5 py-1 font-mono text-xs text-zinc-700 transition hover:border-zinc-400 hover:bg-white dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-600"
-            >
-              {ej.num}
-            </Link>
-          ))}
-        </div>
       </div>
 
       {/* RESULTADO DE LA BÚSQUEDA */}
