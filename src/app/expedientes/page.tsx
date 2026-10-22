@@ -159,7 +159,7 @@ export default async function ExpedientesPage({ searchParams }: ExpedientesPageP
             </div>
           ) : (
             <div className="flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50/70 px-3.5 py-1.5 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
-              <span>👤 Visitante anónimo / No registrado</span>
+              <span>Visitante anónimo / No registrado</span>
               <span className="text-zinc-400">|</span>
               <Link href="/login" className="font-semibold underline hover:text-amber-950 dark:hover:text-amber-200">
                 Iniciar sesión
@@ -199,7 +199,7 @@ export default async function ExpedientesPage({ searchParams }: ExpedientesPageP
       <div className="mb-10 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div className="mb-4">
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            🔍 Consulta de Expediente por Número
+            Consulta de Expediente por Número
           </h2>
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
             Ingresá el número oficial asignado a tu trámite administrativo para conocer su estado de inmediato.
@@ -251,7 +251,6 @@ export default async function ExpedientesPage({ searchParams }: ExpedientesPageP
             />
           ) : (
             <div className="rounded-2xl border border-dashed border-zinc-300 p-8 text-center dark:border-zinc-700">
-              <span className="text-3xl">⚠️</span>
               <h4 className="mt-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
                 No se encontró ningún expediente con el número &ldquo;{terminoBusqueda}&rdquo;
               </h4>
@@ -271,7 +270,7 @@ export default async function ExpedientesPage({ searchParams }: ExpedientesPageP
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
-                  📁 Mis Expedientes ({misExpedientes.length})
+                  Mis Expedientes ({misExpedientes.length})
                 </h2>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
                   Expedientes en los que figuras como titular. Tenés acceso irrestricto al historial completo y dictámenes.
@@ -311,7 +310,7 @@ export default async function ExpedientesPage({ searchParams }: ExpedientesPageP
                       </p>
 
                       <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
-                        <span>🏛️ {exp.area.nombre}</span>
+                        <span>{exp.area.nombre}</span>
                         <span>·</span>
                         <span>Tipo: {exp.tipo}</span>
                       </div>
@@ -335,7 +334,7 @@ export default async function ExpedientesPage({ searchParams }: ExpedientesPageP
           <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
             <div className="border-b border-zinc-100 pb-4 dark:border-zinc-800">
               <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                ✍️ Iniciar Nuevo Trámite / Expediente Municipal
+                Iniciar Nuevo Trámite / Expediente Municipal
               </h3>
               <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
                 Genera un expediente formal con número oficial a tu nombre para su tratamiento en el municipio.
@@ -426,7 +425,7 @@ export default async function ExpedientesPage({ searchParams }: ExpedientesPageP
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                    ➕ Apertura de Nuevo Expediente Administrativo
+                    Apertura de Nuevo Expediente Administrativo
                   </h3>
                   <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
                     Registrar una nueva actuación municipal, asignar área competente, vecino titular y carácter reservado.
@@ -652,7 +651,7 @@ export default async function ExpedientesPage({ searchParams }: ExpedientesPageP
                           </span>
                           {exp.esPrivado && (
                             <span className="rounded bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-800 dark:bg-rose-950 dark:text-rose-300">
-                              🔒 Reservado
+                              Reservado
                             </span>
                           )}
                         </div>
@@ -715,7 +714,6 @@ export default async function ExpedientesPage({ searchParams }: ExpedientesPageP
       {!usuarioActual && !busquedaRealizada && (
         <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
           <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="text-2xl mb-2">🔍</div>
             <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
               Consulta Abierta y Gratuita
             </h4>
@@ -725,7 +723,6 @@ export default async function ExpedientesPage({ searchParams }: ExpedientesPageP
           </div>
 
           <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="text-2xl mb-2">🔐</div>
             <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
               Privacidad y Seguridad
             </h4>
@@ -735,7 +732,6 @@ export default async function ExpedientesPage({ searchParams }: ExpedientesPageP
           </div>
 
           <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="text-2xl mb-2">🏛️</div>
             <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
               Gestión Integral Municipal
             </h4>

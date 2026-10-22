@@ -63,9 +63,6 @@ export function ExpedienteView({
     return (
       <div className="rounded-2xl border border-rose-200 bg-white p-6 shadow-sm dark:border-rose-900/50 dark:bg-zinc-900">
         <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-rose-100 text-2xl dark:bg-rose-950">
-            🔒
-          </div>
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <span className="font-mono text-sm font-bold text-zinc-900 dark:text-zinc-100">
@@ -145,7 +142,7 @@ export function ExpedienteView({
               Área donde se encuentra alojado
             </span>
             <p className="mt-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
-              🏛️ {expediente.area.nombre}
+              {expediente.area.nombre}
             </p>
             {expediente.area.descripcion && (
               <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
@@ -158,7 +155,6 @@ export function ExpedienteView({
         {/* Mensaje de aviso de privacidad para dictámenes y notas internas */}
         <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50/70 p-4 text-xs text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-200">
           <div className="flex items-start gap-3">
-            <span className="text-lg">ℹ️</span>
             <div>
               <p className="font-semibold">
                 Acceso restringido a dictámenes, observaciones internas e historial
@@ -196,7 +192,6 @@ export function ExpedienteView({
       {/* Banner de Identificación y Acceso Privado */}
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-3 dark:border-emerald-900/50 dark:bg-emerald-950/30">
         <div className="flex items-center gap-2 text-xs font-semibold text-emerald-900 dark:text-emerald-200">
-          <span>🛡️</span>
           {esTitular ? (
             <span>
               Acceso Titular Verificado: Has iniciado sesión como el titular legítimo de este expediente (
@@ -246,7 +241,7 @@ export function ExpedienteView({
         <div className="rounded-xl bg-zinc-50 p-3.5 dark:bg-zinc-950">
           <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Área Actual</p>
           <p className="mt-1 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            🏛️ {expediente.area.nombre}
+            {expediente.area.nombre}
           </p>
         </div>
 

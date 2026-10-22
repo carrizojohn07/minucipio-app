@@ -176,14 +176,14 @@ export default async function TurnosPage() {
 
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
                         <div>
-                          🗓️ <span className="font-medium text-zinc-700 dark:text-zinc-300">{formatearFechaHora(new Date(t.fechaHora))}</span>
+                          <span className="font-medium text-zinc-700 dark:text-zinc-300">{formatearFechaHora(new Date(t.fechaHora))}</span>
                         </div>
                         <div>
-                          👤 {t.vecino.nombre} {t.vecino.apellido} (DNI: {t.vecino.dni})
+                          {t.vecino.nombre} {t.vecino.apellido} (DNI: {t.vecino.dni})
                         </div>
                         {t.empleado && (
                           <div>
-                            🏛️ Atiende: {t.empleado.nombre} {t.empleado.apellido}
+                            Atiende: {t.empleado.nombre} {t.empleado.apellido}
                           </div>
                         )}
                       </div>
