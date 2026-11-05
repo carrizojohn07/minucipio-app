@@ -11,7 +11,7 @@ interface TurnoFormProps {
     apellido: string;
     dni: string;
     telefono: string | null;
-  } | null;
+  };
 }
 
 const serviciosPorDefecto: Record<string, string[]> = {
@@ -200,54 +200,9 @@ export function TurnoForm({ areas, usuarioVecino }: TurnoFormProps) {
           </div>
         </div>
 
-        {usuarioVecino ? (
-          <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-600 dark:border-zinc-800 dark:bg-zinc-800/60 dark:text-zinc-300">
-            Titular: <span className="font-semibold text-zinc-900 dark:text-zinc-100">{usuarioVecino.nombre} {usuarioVecino.apellido}</span> (DNI: {usuarioVecino.dni})
-          </div>
-        ) : (
-          <div className="space-y-3 border-t border-zinc-200 pt-3 dark:border-zinc-800">
-            <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-              Datos personales del solicitante
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <input
-                type="text"
-                name="nombre"
-                required
-                placeholder="Nombre"
-                className="w-full rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900 focus:bg-white dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-              />
-              <input
-                type="text"
-                name="apellido"
-                required
-                placeholder="Apellido"
-                className="w-full rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900 focus:bg-white dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <input
-                type="text"
-                name="dni"
-                required
-                placeholder="DNI (sin puntos)"
-                className="w-full rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900 focus:bg-white dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-              />
-              <input
-                type="tel"
-                name="telefono"
-                placeholder="Teléfono"
-                className="w-full rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900 focus:bg-white dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-              />
-            </div>
-            <input
-              type="email"
-              name="email"
-              placeholder="Email de contacto (opcional)"
-              className="w-full rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900 focus:bg-white dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-            />
-          </div>
-        )}
+        <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-600 dark:border-zinc-800 dark:bg-zinc-800/60 dark:text-zinc-300">
+          Titular: <span className="font-semibold text-zinc-900 dark:text-zinc-100">{usuarioVecino.nombre} {usuarioVecino.apellido}</span> (DNI: {usuarioVecino.dni})
+        </div>
 
         <button
           type="submit"
