@@ -24,3 +24,13 @@ export async function requireUsuario() {
 
   return usuario;
 }
+
+export async function requireAdmin() {
+  const usuario = await requireUsuario();
+
+  if (usuario.rol !== "ADMIN") {
+    redirect("/");
+  }
+
+  return usuario;
+}

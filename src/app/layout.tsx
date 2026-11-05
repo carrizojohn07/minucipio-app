@@ -68,6 +68,13 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
                   </Link>
                 </li>
               ))}
+              {usuario?.rol === "ADMIN" && (
+                <li>
+                  <Link href="/admin" className="font-semibold text-[#c0000a] hover:text-[#8b0007] transition-colors">
+                    Administración
+                  </Link>
+                </li>
+              )}
             </ul>
 
             {usuario ? (
