@@ -1,17 +1,21 @@
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { EstadoTurno } from "@prisma/client";
+import { requireUsuario } from "@/lib/session";
 import { TurnoForm } from "./turno-form";
 import { actualizarEstadoTurno, cancelarTurno } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function TurnosPage() {
-  const cookieStore = await cookies();
-  const sesionUsuarioId = cookieStore.get("sesion_usuario_id")?.value;
+  const usuarioActual = await requireUsuario();
 
-  const [turnos, areas, empleados, usuarioActual] = await Promise.all([
+  const esPersonalMunicipal = usuarioActual.rol === "ADMIN" || usuarioActual.rol === "EMPLEADO";
+  const vecinoActualId = usuarioActual.vecino?.id;
+
+  const [turnos, areas] = await Promise.all([
     prisma.turno.findMany({
+      // El personal ve todos los turnos; el vecino, solo los suyos.
+      where: esPersonalMunicipal ? {} : { vecinoId: vecinoActualId ?? "" },
       include: {
         vecino: true,
         area: true,
@@ -22,19 +26,7 @@ export default async function TurnosPage() {
     prisma.area.findMany({
       orderBy: { nombre: "asc" },
     }),
-    prisma.empleado.findMany({
-      orderBy: { apellido: "asc" },
-    }),
-    sesionUsuarioId
-      ? prisma.usuario.findUnique({
-          where: { id: sesionUsuarioId },
-          include: { vecino: true, empleado: true },
-        })
-      : null,
   ]);
-
-  const esPersonalMunicipal = usuarioActual?.rol === "ADMIN" || usuarioActual?.rol === "EMPLEADO";
-  const vecinoActualId = usuarioActual?.vecino?.id;
 
   const stats = {
     total: turnos.length,
@@ -115,23 +107,21 @@ export default async function TurnosPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
-        <div className="lg:col-span-5">
-          <TurnoForm
-            areas={areas}
-            usuarioVecino={
-              usuarioActual?.vecino
-                ? {
-                    nombre: usuarioActual.vecino.nombre,
-                    apellido: usuarioActual.vecino.apellido,
-                    dni: usuarioActual.vecino.dni,
-                    telefono: usuarioActual.vecino.telefono,
-                  }
-                : null
-            }
-          />
-        </div>
+        {usuarioActual.vecino && (
+          <div className="lg:col-span-5">
+            <TurnoForm
+              areas={areas}
+              usuarioVecino={{
+                nombre: usuarioActual.vecino.nombre,
+                apellido: usuarioActual.vecino.apellido,
+                dni: usuarioActual.vecino.dni,
+                telefono: usuarioActual.vecino.telefono,
+              }}
+            />
+          </div>
+        )}
 
-        <div className="space-y-4 lg:col-span-7">
+        <div className={`space-y-4 ${usuarioActual.vecino ? "lg:col-span-7" : "lg:col-span-12"}`}>
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
               {esPersonalMunicipal ? "Agenda de Turnos Municipal" : "Turnos Solicitados"}
@@ -146,9 +136,11 @@ export default async function TurnosPage() {
               <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
                 No hay turnos registrados por el momento.
               </p>
-              <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
-                Completá el formulario a la izquierda para agendar el primer turno.
-              </p>
+              {usuarioActual.vecino && (
+                <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
+                  Completá el formulario a la izquierda para agendar el primer turno.
+                </p>
+              )}
             </div>
           ) : (
             <div className="space-y-3">
@@ -176,11 +168,15 @@ export default async function TurnosPage() {
 
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
                         <div>
+                          Turno para el{" "}
                           <span className="font-medium text-zinc-700 dark:text-zinc-300">{formatearFechaHora(new Date(t.fechaHora))}</span>
                         </div>
-                        <div>
-                          {t.vecino.nombre} {t.vecino.apellido} (DNI: {t.vecino.dni})
-                        </div>
+                        <div>Solicitado el {formatearFechaHora(new Date(t.creadoEn))}</div>
+                        {esPersonalMunicipal && (
+                          <div>
+                            {t.vecino.nombre} {t.vecino.apellido} (DNI: {t.vecino.dni})
+                          </div>
+                        )}
                         {t.empleado && (
                           <div>
                             Atiende: {t.empleado.nombre} {t.empleado.apellido}

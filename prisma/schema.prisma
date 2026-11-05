@@ -151,6 +151,7 @@ model Turno {
   fechaHora   DateTime
   servicio    String      // ej: "Licencia de conducir", "Consulta con asistente social"
   estado      EstadoTurno @default(RESERVADO)
+  creadoEn    DateTime    @default(now())
 
   vecino      Vecino    @relation(fields: [vecinoId], references: [id])
   vecinoId    String
