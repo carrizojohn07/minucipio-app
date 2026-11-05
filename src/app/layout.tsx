@@ -21,6 +21,7 @@ export const metadata: Metadata = {
 };
 
 const modulos = [
+  { href: "/noticias", label: "Noticias" },
   { href: "/reclamos", label: "Reclamos" },
   { href: "/expedientes", label: "Expedientes" },
   { href: "/turnos", label: "Turnos" },
@@ -40,16 +41,29 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-zinc-50 dark:bg-black">
-        <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-black">
+      <body className="min-h-full flex flex-col bg-[#f8f8f8]">
+        {/* Franja superior con escudo/nombre */}
+        <div className="bg-[#c0000a] text-white">
+          <div className="mx-auto max-w-5xl px-6 py-2 flex items-center gap-2">
+            <span className="text-xs font-medium tracking-wide uppercase opacity-90">
+              Sistema de Gestión Municipal
+            </span>
+          </div>
+        </div>
+
+        {/* Header principal */}
+        <header className="bg-white border-b border-zinc-200 shadow-sm">
           <nav className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-            <Link href="/" className="font-semibold text-zinc-900 dark:text-zinc-50">
+            <Link href="/" className="flex items-center gap-2 font-bold text-xl text-[#c0000a] tracking-tight">
               Municipio
             </Link>
-            <ul className="flex gap-6 text-sm font-medium text-zinc-600 dark:text-zinc-400">
+            <ul className="flex gap-6 text-sm font-medium text-zinc-600">
               {modulos.map((m) => (
                 <li key={m.href}>
-                  <Link href={m.href} className="hover:text-zinc-950 dark:hover:text-zinc-50">
+                  <Link
+                    href={m.href}
+                    className="hover:text-[#c0000a] transition-colors"
+                  >
                     {m.label}
                   </Link>
                 </li>
@@ -58,13 +72,13 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
 
             {usuario ? (
               <div className="flex items-center gap-3 text-sm">
-                <span className="font-medium text-zinc-900 dark:text-zinc-50">
+                <span className="font-medium text-zinc-900">
                   {nombreMostrar}
                 </span>
                 <form action={cerrarSesion}>
                   <button
                     type="submit"
-                    className="text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50"
+                    className="text-zinc-500 hover:text-[#c0000a] transition-colors"
                   >
                     Cerrar sesión
                   </button>
@@ -72,12 +86,12 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
               </div>
             ) : (
               <div className="flex items-center gap-4 text-sm font-medium">
-                <Link href="/login" className="text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50">
+                <Link href="/login" className="text-zinc-600 hover:text-[#c0000a] transition-colors">
                   Iniciar sesión
                 </Link>
                 <Link
                   href="/registro"
-                  className="rounded-md bg-zinc-900 px-3 py-1.5 text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-300"
+                  className="rounded-md bg-[#c0000a] px-3 py-1.5 text-white hover:bg-[#8b0007] transition-colors"
                 >
                   Registrarme
                 </Link>

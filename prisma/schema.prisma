@@ -160,6 +160,20 @@ model Turno {
   empleadoId  String?
 }
 
+// ---------- Módulo: Noticias ----------
+
+model Noticia {
+  id         String   @id @default(cuid())
+  titulo     String
+  resumen    String
+  contenido  String   // cuerpo completo de la noticia
+  categoria  String
+  imagen     String?  // URL de imagen opcional
+  publicada  Boolean  @default(false)
+  creadoEn   DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+}
+
 // ---------- Módulo: Atención al vecino ----------
 
 model Atencion {
