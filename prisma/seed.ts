@@ -119,6 +119,50 @@ async function main() {
     where: { dni: "48231204" },
   });
 
+  // 4. Noticias de ejemplo
+  // Noticia no tiene ningún campo único aparte del id, así que no se puede usar upsert.
+  // En su lugar se busca por título: si ya existe no se hace nada, y el seed se puede
+  // correr todas las veces que haga falta sin duplicar noticias.
+  const noticiasEjemplo = [
+    {
+      titulo: "Comenzó la repavimentación de las calles del centro",
+      categoria: "Obras",
+      resumen:
+        "El municipio inició los trabajos de bacheo y repavimentación en las principales arterias del casco céntrico.",
+      contenido:
+        "La Secretaría de Obras Públicas dio inicio a un plan de repavimentación que abarcará las calles más transitadas del centro de la ciudad. Los trabajos se realizarán por etapas para minimizar las molestias a vecinos y comercios.\n\n" +
+        "Durante las tareas habrá cortes parciales de tránsito en horario diurno. Se recomienda a los conductores circular con precaución y respetar las indicaciones del personal de señalización.\n\n" +
+        "Los vecinos que detecten baches u otros desperfectos pueden informarlos a través del módulo de Reclamos de esta plataforma.",
+    },
+    {
+      titulo: "Nueva plataforma online para reclamos, trámites y turnos",
+      categoria: "Institucional",
+      resumen:
+        "Los vecinos ya pueden realizar reclamos, seguir expedientes y reservar turnos desde un solo lugar, sin hacer filas.",
+      contenido:
+        "El municipio puso en marcha el Sistema de Gestión Municipal, una plataforma web que reúne en un solo lugar los principales trámites y servicios para el vecino.\n\n" +
+        "Desde su cuenta, cada persona puede cargar reclamos, consultar el estado de sus expedientes, reservar turnos de atención presencial y realizar consultas generales. Todo queda registrado y puede seguirse en línea.\n\n" +
+        "Para comenzar, solo hace falta registrarse con un email y los datos personales básicos.",
+    },
+    {
+      titulo: "Jornada de vacunación y controles de salud gratuitos",
+      categoria: "Salud",
+      resumen:
+        "Este mes se realizarán controles médicos y vacunación en los centros de salud barriales, sin necesidad de turno previo.",
+      contenido:
+        "La Secretaría de Salud informa que durante este mes se llevarán adelante jornadas de vacunación y controles de salud gratuitos en los centros de atención primaria de cada barrio.\n\n" +
+        "Podrán asistir niños y adultos con su DNI y libreta sanitaria, en el horario habitual de atención. Las jornadas se repetirán todas las semanas hasta fin de mes.",
+    },
+  ];
+
+  for (const noticia of noticiasEjemplo) {
+    const existente = await prisma.noticia.findFirst({ where: { titulo: noticia.titulo } });
+    if (!existente) {
+      await prisma.noticia.create({ data: { ...noticia, publicada: true } });
+    }
+  }
+
+  console.log("Seed completado.");
 }
 
 main()
